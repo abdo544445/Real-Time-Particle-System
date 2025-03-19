@@ -18,10 +18,10 @@ impl Simulation {
         let mut particles = Vec::new();
         
         // Create some initial particles
-        for _ in 0..100 {
+        for _ in 0..50 {  // Reduced number of particles for better visibility
             let x = rng.gen_range(0.0..width as f32);
             let y = rng.gen_range(0.0..height as f32);
-            let mass = rng.gen_range(1.0..5.0);
+            let mass = rng.gen_range(0.5..2.0);  // Lighter particles
             let radius = mass * 2.0;
             
             // Create random color
@@ -35,7 +35,11 @@ impl Simulation {
         
         // Set up forces
         let mut forces: Vec<Box<dyn Force>> = Vec::new();
-        forces.push(Box::new(Gravity::default()));
+        // Reduced regular gravity
+        forces.push(Box::new(Gravity {
+            strength: 2.0,  // Much weaker regular gravity
+            direction: Vector2::new(0.0, 1.0),
+        }));
         forces.push(Box::new(MouseGravity::default()));
         
         Self {

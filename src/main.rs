@@ -4,7 +4,7 @@ mod renderer;
 mod force;
 mod interaction;
 
-use minifb::{Key, MouseButton, MouseMode, Window, WindowOptions};
+use minifb::{Key, MouseMode, Window, WindowOptions};
 use simulation::Simulation;
 use renderer::Renderer;
 use nalgebra::Vector2;
@@ -29,9 +29,6 @@ fn main() {
     // Set up fps cap
     window.limit_update_rate(Some(std::time::Duration::from_micros(1_000_000 / FPS_CAP)));
 
-    // Enable mouse tracking
-    window.set_position_polling(true);
-
     // Initialize simulation and renderer
     let mut simulation = Simulation::new(WIDTH, HEIGHT);
     let mut renderer = Renderer::new(WIDTH, HEIGHT);
@@ -42,9 +39,10 @@ fn main() {
     // Main loop
     while window.is_open() && !window.is_key_down(Key::Escape) {
         // Update mouse position if available
-        if let Some((x, y)) = window.get_mouse_pos(MouseMode::Discard) {
+        if let Some((x, y)) = window.get_mouse_pos(MouseMode::Clamp) {
             mouse_pos.x = x;
             mouse_pos.y = y;
+            println!("Mouse position: ({}, {})", x, y);  // Debug output
         }
 
         // Update simulation

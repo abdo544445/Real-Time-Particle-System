@@ -46,7 +46,7 @@ pub struct MouseGravity {
 impl Default for MouseGravity {
     fn default() -> Self {
         Self {
-            strength: 1000.0, // Stronger than regular gravity
+            strength: 5000.0, // Much stronger to make the effect more noticeable
         }
     }
 }
@@ -58,12 +58,12 @@ impl Force for MouseGravity {
             let distance_squared = diff.norm_squared();
             
             // Avoid divide by zero and extreme forces when too close
-            if distance_squared < 10.0 {
+            if distance_squared < 1.0 {
                 return Vector2::new(0.0, 0.0);
             }
             
             // Inverse square law (like real gravity)
-            let force_magnitude = self.strength * mass / distance_squared;
+            let force_magnitude = self.strength * mass / (distance_squared.sqrt());
             let direction = diff.normalize();
             
             direction * force_magnitude
