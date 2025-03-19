@@ -1,4 +1,4 @@
-# Advanced Real-Time Particle System
+# Real-Time Particle System
 
 A high-performance, real-time particle simulation system implemented in Rust. This system simulates thousands of particles influenced by various forces including gravity, inter-particle attraction/repulsion, and mouse-based gravitational attraction.
 
