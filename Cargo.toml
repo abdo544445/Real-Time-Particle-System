@@ -1,0 +1,15 @@
+[package]
+name = "particle_system"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# For initial rendering
+minifb = "0.24"
+# For parallel processing
+rayon = "1.7"
+# For random number generation
+rand = "0.8"
+# For vector/math operations
+nalgebra = "0.32"
+# We'll add wgpu, egui, etc. later as we progress 
