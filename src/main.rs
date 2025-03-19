@@ -4,9 +4,10 @@ mod renderer;
 mod force;
 mod interaction;
 
-use minifb::{Key, Window, WindowOptions};
+use minifb::{Key, MouseButton, MouseMode, Window, WindowOptions};
 use simulation::Simulation;
 use renderer::Renderer;
+use nalgebra::Vector2;
 
 // Constants
 const WIDTH: usize = 800;
@@ -28,14 +29,26 @@ fn main() {
     // Set up fps cap
     window.limit_update_rate(Some(std::time::Duration::from_micros(1_000_000 / FPS_CAP)));
 
+    // Enable mouse tracking
+    window.set_position_polling(true);
+
     // Initialize simulation and renderer
     let mut simulation = Simulation::new(WIDTH, HEIGHT);
     let mut renderer = Renderer::new(WIDTH, HEIGHT);
 
+    // Track mouse position for gravity center
+    let mut mouse_pos = Vector2::new(WIDTH as f32 / 2.0, HEIGHT as f32 / 2.0);
+
     // Main loop
     while window.is_open() && !window.is_key_down(Key::Escape) {
+        // Update mouse position if available
+        if let Some((x, y)) = window.get_mouse_pos(MouseMode::Discard) {
+            mouse_pos.x = x;
+            mouse_pos.y = y;
+        }
+
         // Update simulation
-        simulation.update();
+        simulation.update(mouse_pos);
 
         // Render
         let buffer = renderer.render(&simulation);

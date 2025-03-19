@@ -1,5 +1,5 @@
 use crate::particle::Particle;
-use crate::force::{Force, Gravity, Wind};
+use crate::force::{Force, Gravity, Wind, MouseGravity};
 use nalgebra::Vector2;
 use rand::Rng;
 use std::time::Instant;
@@ -36,10 +36,7 @@ impl Simulation {
         // Set up forces
         let mut forces: Vec<Box<dyn Force>> = Vec::new();
         forces.push(Box::new(Gravity::default()));
-        forces.push(Box::new(Wind {
-            strength: 0.1,
-            direction: Vector2::new(1.0, 0.0), // Rightward
-        }));
+        forces.push(Box::new(MouseGravity::default()));
         
         Self {
             particles,
@@ -50,7 +47,7 @@ impl Simulation {
         }
     }
     
-    pub fn update(&mut self) {
+    pub fn update(&mut self, mouse_pos: Vector2<f32>) {
         let now = Instant::now();
         let dt = now.duration_since(self.last_update).as_secs_f32();
         self.last_update = now;
@@ -58,7 +55,7 @@ impl Simulation {
         // 1. Apply external forces (e.g., Gravity, Wind)
         for particle in &mut self.particles {
             for force in &self.forces {
-                let force_vector = force.apply(&particle.position, &particle.velocity, particle.mass);
+                let force_vector = force.apply(&particle.position, &particle.velocity, particle.mass, Some(&mouse_pos));
                 particle.apply_force(force_vector);
             }
         }
