@@ -56,6 +56,9 @@ impl Simulation {
         let dt = now.duration_since(self.last_update).as_secs_f32();
         self.last_update = now;
 
+        // Limit dt to prevent instability with large time steps
+        let dt = dt.min(1.0 / 30.0);
+
         // 1. Apply external forces (e.g., Gravity, Wind)
         for particle in &mut self.particles {
             for force in &self.forces {
@@ -67,7 +70,7 @@ impl Simulation {
         // 2. Apply inter-particle attraction/repulsion forces
         crate::interaction::apply_attraction_repulsion(&mut self.particles);
 
-        // 3. Update particle positions using Euler integration
+        // 3. Update particle positions using RK4 integration
         for particle in &mut self.particles {
             particle.update(dt);
         }
@@ -76,48 +79,17 @@ impl Simulation {
         let sim_width = self.width as f32;
         let sim_height = self.height as f32;
         for particle in &mut self.particles {
-            handle_boundary_collision_particle(sim_width, sim_height, particle);
+            particle.handle_boundary_collision(sim_width, sim_height);
         }
 
-        // 5. Handle particle collisions (particle-particle collisions)
-        self.handle_particle_collisions();
-    }
-    
-    fn handle_particle_collisions(&mut self) {
-        let restitution = 0.8;
+        // 5. Handle particle-particle collisions
         let len = self.particles.len();
         for i in 0..len {
             for j in (i+1)..len {
-                // Safely split two mutable references
-                let (p1, p2) = {
-                    let (left, right) = self.particles.split_at_mut(j);
-                    (&mut left[i], &mut right[0])
-                };
-
-                let diff = p2.position - p1.position;
-                let distance = diff.norm();
-                let min_distance = p1.radius + p2.radius;
-                if distance < min_distance && distance > 0.0 {
-                    let normal = diff / distance;
-
-                    // Relative velocity along the collision normal
-                    let rel_vel = p2.velocity - p1.velocity;
-                    let vel_along_normal = rel_vel.dot(&normal);
-                    if vel_along_normal > 0.0 {
-                        continue;
-                    }
-
-                    let impulse_scalar = -(1.0 + restitution) * vel_along_normal / (1.0/p1.mass + 1.0/p2.mass);
-                    let impulse = impulse_scalar * normal;
-                    p1.velocity -= impulse / p1.mass;
-                    p2.velocity += impulse / p2.mass;
-
-                    // Positional correction to reduce sinking
-                    let percent = 0.2; // 20% correction
-                    let correction = normal * percent * (min_distance - distance) / (1.0/p1.mass + 1.0/p2.mass);
-                    p1.position -= correction / p1.mass;
-                    p2.position += correction / p2.mass;
-                }
+                let (particles_a, particles_b) = self.particles.split_at_mut(j);
+                let particle1 = &mut particles_a[i];
+                let particle2 = &mut particles_b[0];
+                particle1.handle_collision(particle2);
             }
         }
     }
