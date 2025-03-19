@@ -75,7 +75,7 @@ impl Simulation {
         let sim_width = self.width as f32;
         let sim_height = self.height as f32;
         for particle in &mut self.particles {
-            Simulation::handle_boundary_collision_particle(sim_width, sim_height, particle);
+            handle_boundary_collision_particle(sim_width, sim_height, particle);
         }
 
         // 5. Handle particle collisions (particle-particle collisions)
