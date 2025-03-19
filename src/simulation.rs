@@ -2,7 +2,7 @@ use crate::particle::Particle;
 use crate::force::{Force, Gravity, Wind};
 use nalgebra::Vector2;
 use rand::Rng;
-use std::time::{Instant, Duration};
+use std::time::Instant;
 
 pub struct Simulation {
     pub particles: Vec<Particle>,
@@ -72,36 +72,16 @@ impl Simulation {
         }
 
         // 4. Handle boundary collisions
+        let sim_width = self.width as f32;
+        let sim_height = self.height as f32;
         for particle in &mut self.particles {
-            self.handle_boundary_collision(particle);
+            Simulation::handle_boundary_collision_particle(sim_width, sim_height, particle);
         }
 
         // 5. Handle particle collisions (particle-particle collisions)
         self.handle_particle_collisions();
     }
     
-    fn handle_boundary_collision(&self, particle: &mut Particle) {
-        let restitution = 0.8; // Bounciness factor
-        
-        // Left and right boundaries
-        if particle.position.x - particle.radius < 0.0 {
-            particle.position.x = particle.radius;
-            particle.velocity.x = -particle.velocity.x * restitution;
-        } else if particle.position.x + particle.radius > self.width as f32 {
-            particle.position.x = self.width as f32 - particle.radius;
-            particle.velocity.x = -particle.velocity.x * restitution;
-        }
-        
-        // Top and bottom boundaries
-        if particle.position.y - particle.radius < 0.0 {
-            particle.position.y = particle.radius;
-            particle.velocity.y = -particle.velocity.y * restitution;
-        } else if particle.position.y + particle.radius > self.height as f32 {
-            particle.position.y = self.height as f32 - particle.radius;
-            particle.velocity.y = -particle.velocity.y * restitution;
-        }
-    }
-
     fn handle_particle_collisions(&mut self) {
         let restitution = 0.8;
         let len = self.particles.len();
@@ -139,5 +119,28 @@ impl Simulation {
                 }
             }
         }
+    }
+}
+
+// Private helper function for boundary collision handling.
+fn handle_boundary_collision_particle(width: f32, height: f32, particle: &mut Particle) {
+    let restitution = 0.8; // Bounciness factor
+    
+    // Left and right boundaries
+    if particle.position.x - particle.radius < 0.0 {
+        particle.position.x = particle.radius;
+        particle.velocity.x = -particle.velocity.x * restitution;
+    } else if particle.position.x + particle.radius > width {
+        particle.position.x = width - particle.radius;
+        particle.velocity.x = -particle.velocity.x * restitution;
+    }
+    
+    // Top and bottom boundaries
+    if particle.position.y - particle.radius < 0.0 {
+        particle.position.y = particle.radius;
+        particle.velocity.y = -particle.velocity.y * restitution;
+    } else if particle.position.y + particle.radius > height {
+        particle.position.y = height - particle.radius;
+        particle.velocity.y = -particle.velocity.y * restitution;
     }
 } 
